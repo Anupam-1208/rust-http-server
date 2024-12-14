@@ -9,7 +9,7 @@ fn main() {
     // creating a thread pool, to pickup new connection for a request from the request  queue
     let pool = ThreadPool::new(1);
 
-    for stream in socket.incoming() {
+    for stream in socket.incoming().take(2) {
         match stream {
             Ok(stream) => {
                 pool.execute(|| handle_connection(stream));
@@ -21,6 +21,7 @@ fn main() {
         }
 
     }
+    println!("Shutting down http server");
 
 }
 
@@ -31,7 +32,7 @@ fn handle_connection(mut stream:std::net::TcpStream){
     // println!("Request: {http_request:#?}");
 
     let request_line = buff_reader.lines().next().unwrap().unwrap();
-    // write a wrapper for Http request 
+    // write a wrapper for Http request
     let (status_line, path) = match &request_line[..] {
         "GET / HTTP/1.1" => {
             std::thread::sleep(std::time::Duration::from_secs(10));
